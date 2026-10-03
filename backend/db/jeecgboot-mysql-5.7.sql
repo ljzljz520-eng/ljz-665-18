@@ -10346,4 +10346,56 @@ END
 ;;
 delimiter ;
 
+
+-- ----------------------------
+-- 设备管理模块：设备信息表、设备状态字典、菜单
+-- ----------------------------
+DROP TABLE IF EXISTS `device_info`;
+CREATE TABLE `device_info`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键id',
+  `device_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '设备名称',
+  `device_code` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '设备编号',
+  `depart_id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '所属部门',
+  `status` int(2) NULL DEFAULT 1 COMMENT '设备状态：1在用 2闲置 3维修中 4已报废',
+  `model` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '规格型号',
+  `location` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '存放位置',
+  `charge_person` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '负责人',
+  `purchase_date` date NULL DEFAULT NULL COMMENT '购置日期',
+  `remark` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '创建人',
+  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '更新人',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  `del_flag` int(1) NULL DEFAULT 0 COMMENT '删除状态 0正常 1已删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_device_name`(`device_name`) USING BTREE,
+  INDEX `idx_device_code`(`device_code`) USING BTREE,
+  INDEX `idx_device_depart`(`depart_id`) USING BTREE,
+  INDEX `idx_device_status`(`status`) USING BTREE,
+  INDEX `idx_device_create_time`(`create_time`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '设备信息表' ROW_FORMAT = DYNAMIC;
+
+INSERT INTO `device_info` VALUES ('dev0000000000000000000000000001', '数控车床A01', 'CNC-2026-001', '1958496444470005762', 1, 'CK6140', '一号厂房东侧', '张三', '2024-03-12', '日常点检正常', 'admin', '2026-09-01 09:12:30', NULL, NULL, 0);
+INSERT INTO `device_info` VALUES ('dev0000000000000000000000000002', '空气压缩机B02', 'AIR-2025-014', '1958496444470005762', 2, 'GA22', '动力站1号间', '李四', '2025-01-20', '待机闲置中', 'admin', '2026-09-05 14:08:00', NULL, NULL, 0);
+INSERT INTO `device_info` VALUES ('dev0000000000000000000000000003', '激光打标机C03', 'LAS-2023-088', '1958496759810363394', 3, 'FLM-20F', '二号厂房二层', '王五', '2023-07-05', '振镜故障维修中', 'admin', '2026-09-12 10:30:45', NULL, NULL, 0);
+INSERT INTO `device_info` VALUES ('dev0000000000000000000000000004', '叉车D04', 'FLT-2019-002', '1958496759810363394', 4, 'CPCD30', '仓储中心', '赵六', '2019-11-02', '达到使用年限已报废', 'admin', '2026-08-28 16:45:12', NULL, NULL, 0);
+INSERT INTO `device_info` VALUES ('dev0000000000000000000000000005', '恒温恒湿试验箱E05', 'ENV-2024-031', '1958496444470005762', 1, 'GDJS-100', '质检实验室', '孙七', '2024-06-18', '校准证书在有效期内', 'admin', '2026-09-20 08:00:00', NULL, NULL, 0);
+
+-- 设备状态字典
+INSERT INTO `sys_dict` VALUES ('devdict000000000000000000000001', '设备状态', 'device_status', '设备状态：1在用 2闲置 3维修中 4已报废', 0, 'admin', '2026-10-03 10:00:00', NULL, NULL, 1, 0, NULL);
+INSERT INTO `sys_dict_item` VALUES ('devdictitem0000000000000000001', 'devdict000000000000000000000001', '在用', '1', 'green', '在用', 1, 1, 'admin', '2026-10-03 10:00:00', NULL, NULL);
+INSERT INTO `sys_dict_item` VALUES ('devdictitem0000000000000000002', 'devdict000000000000000000000001', '闲置', '2', 'default', '闲置', 2, 1, 'admin', '2026-10-03 10:00:00', NULL, NULL);
+INSERT INTO `sys_dict_item` VALUES ('devdictitem0000000000000000003', 'devdict000000000000000000000001', '维修中', '3', 'orange', '维修中', 3, 1, 'admin', '2026-10-03 10:00:00', NULL, NULL);
+INSERT INTO `sys_dict_item` VALUES ('devdictitem0000000000000000004', 'devdict000000000000000000000001', '已报废', '4', 'red', '已报废', 4, 1, 'admin', '2026-10-03 10:00:00', NULL, NULL);
+
+-- 菜单：一级目录“设备管理” + 子菜单“设备列表”（详情页隐藏路由，不显示在菜单）
+INSERT INTO `sys_permission` VALUES ('devmenu0000000000000000000000001', NULL, '设备管理', '/device', NULL, 1, NULL, NULL, 0, NULL, '1', 5.00, 1, 'ant-design:hdd-outlined', 0, 0, 0, 0, NULL, 'admin', '2026-10-03 10:00:00', NULL, NULL, 0, 0, '1', 0);
+INSERT INTO `sys_permission` VALUES ('devmenu0000000000000000000000002', 'devmenu0000000000000000000000001', '设备列表', '/device/list', 'device/index', 1, 'device-list', NULL, 1, NULL, '1', 1.00, 0, 'ant-design:unordered-list-outlined', 1, 1, 0, 0, NULL, 'admin', '2026-10-03 10:00:00', NULL, NULL, 0, 0, '1', 0);
+INSERT INTO `sys_permission` VALUES ('devmenu0000000000000000000000003', 'devmenu0000000000000000000000001', '设备详情', '/device/detail/:id', 'device/detail/index', 1, 'device-detail', NULL, 1, NULL, '1', 2.00, 0, NULL, 1, 0, 1, 1, NULL, 'admin', '2026-10-03 10:00:00', NULL, NULL, 0, 0, '1', 0);
+
+-- 管理员角色授权
+INSERT INTO `sys_role_permission` VALUES ('devroleperm000000000000000000001', 'f6817f48af4fb3af11b9e8bf182f618b', 'devmenu0000000000000000000000001', NULL, NULL, NULL);
+INSERT INTO `sys_role_permission` VALUES ('devroleperm000000000000000000002', 'f6817f48af4fb3af11b9e8bf182f618b', 'devmenu0000000000000000000000002', NULL, NULL, NULL);
+INSERT INTO `sys_role_permission` VALUES ('devroleperm000000000000000000003', 'f6817f48af4fb3af11b9e8bf182f618b', 'devmenu0000000000000000000000003', NULL, NULL, NULL);
+
 SET FOREIGN_KEY_CHECKS = 1;
